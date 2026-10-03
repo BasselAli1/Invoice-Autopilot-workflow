@@ -1,0 +1,515 @@
+{
+  "name": "Invoice Processing",
+  "nodes": [
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#invoices",
+          "mode": "name"
+        },
+        "text": "=Invoice needs review\nVendor: {{ $json.vendor }}\nInvoice number: {{ $json.invoice_number }}\nTotal: {{ $json.total }} {{ $json.currency }}\nChecks: items match subtotal = {{ $json.checks.itemsMatchSubtotal }}, total matches = {{ $json.checks.totalMatches }}, confident = {{ $json.checks.confident }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        1248,
+        16
+      ],
+      "id": "1d3e9d97-c70e-4186-922a-d263adfeb36d",
+      "name": "Send a slack notification",
+      "webhookId": "f6d245bd-4174-4b02-9250-a0a0041183d4",
+      "credentials": {
+        "slackApi": {
+          "id": "ZF3CD9KnS3XFECoV",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "m3iNwHatXq48OeeO",
+          "mode": "list",
+          "cachedResultName": "invoices",
+          "cachedResultUrl": "/projects/a4k5opclI7r0pFnn/datatables/m3iNwHatXq48OeeO"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "vendor": "={{ $('Check extracted values').item.json.vendor }}",
+            "invoice_number": "={{ $('Check extracted values').item.json.invoice_number }}",
+            "date": "={{ $('Check extracted values').item.json.date }}",
+            "currency": "={{ $('Check extracted values').item.json.currency }}",
+            "subtotal": "={{ $('Check extracted values').item.json.subtotal }}",
+            "tax": "={{ $('Check extracted values').item.json.tax }}",
+            "total": "={{ $('Check extracted values').item.json.total }}",
+            "confidence": "={{ $('Check extracted values').item.json.confidence }}",
+            "status": "approved"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "vendor",
+              "displayName": "vendor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invoice_number",
+              "displayName": "invoice_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "currency",
+              "displayName": "currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "subtotal",
+              "displayName": "subtotal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "tax",
+              "displayName": "tax",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "total",
+              "displayName": "total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        -208
+      ],
+      "id": "9bb3d102-407f-4e99-8245-dd3efe56b806",
+      "name": "Update inventory table"
+    },
+    {
+      "parameters": {
+        "format": "resolved",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.2,
+      "position": [
+        144,
+        0
+      ],
+      "id": "f14b4dff-d023-4e26-ba9f-a05de1d053cb",
+      "name": "Email Trigger",
+      "credentials": {
+        "imap": {
+          "id": "OT7OxQouDw9RAiLf",
+          "name": "IMAP gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "708720f6-d0c0-40da-a690-0ca793eb0ab4",
+              "leftValue": "={{ Object.values($binary || {}).some(f => f.mimeType === 'application/pdf') }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        288,
+        0
+      ],
+      "id": "289aeccb-007f-48ff-95a4-e588c05a7ae8",
+      "name": "PDF check"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        -80
+      ],
+      "id": "5931282a-4ebc-4346-b425-9d68895de667",
+      "name": "PDF extraction"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "{\n  \"vendor\": \"Acme Ltd\",\n  \"invoice_number\": \"INV-001\",\n  \"date\": \"2026-01-15\",\n  \"currency\": \"USD\",\n  \"subtotal\": 100,\n  \"tax\": 10,\n  \"total\": 110,\n  \"line_items\": [\n    { \"description\": \"Item name\", \"quantity\": 1, \"unit_price\": 100 }\n  ],\n  \"confidence\": 0.9\n}",
+        "options": {
+          "systemPromptTemplate": "Extract the invoice fields from the text. For confidence, give a number from 0 to 1 for how sure you are that the fields are correct. If a field is missing, leave it empty."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        -80
+      ],
+      "id": "031c2262-dddc-42ee-9953-949e7c5063bf",
+      "name": "Extract info from PDF"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inv = $input.first().json.output\nconst items = inv.line_items || []\n\nconst itemsSum = items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0)\nconst expectedTotal = inv.subtotal + inv.tax\n\nconst itemsMatchSubtotal = Math.abs(itemsSum - inv.subtotal) < 0.02\nconst totalMatches = Math.abs(expectedTotal - inv.total) < 0.02\nconst hasRequiredFields = Boolean(inv.vendor && inv.invoice_number && inv.date && inv.total)\nconst confident = inv.confidence >= 0.8\n\nconst needs_review = !(itemsMatchSubtotal && totalMatches && hasRequiredFields && confident)\n\nreturn [{\n  json: {\n    ...inv,\n    checks: { itemsMatchSubtotal, totalMatches, hasRequiredFields, confident },\n    needs_review\n  }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        -80
+      ],
+      "id": "e62457fa-96cf-4a74-8a8b-daa4156f049c",
+      "name": "Check extracted values"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2bf2105e-6333-4f5f-b9f1-64884580fc71",
+              "leftValue": "={{ $json.needs_review }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1072,
+        -80
+      ],
+      "id": "5b0264a4-7dda-43ab-b5b6-aa810c19602b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "m3iNwHatXq48OeeO",
+          "mode": "list",
+          "cachedResultName": "invoices",
+          "cachedResultUrl": "/projects/a4k5opclI7r0pFnn/datatables/m3iNwHatXq48OeeO"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "invoice_number",
+              "keyValue": "={{ $('Check extracted values').item.json.invoice_number }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1248,
+        -128
+      ],
+      "id": "dd43b7bf-148c-400e-a014-407fee91cb76",
+      "name": "Check Duplicate",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b629861e-530c-400d-adb5-cca7b1f8192a",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1392,
+        -128
+      ],
+      "id": "6911f683-ae47-444e-bf5c-49d29a30cc64",
+      "name": "is new"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.6-luna",
+          "mode": "list",
+          "cachedResultName": "gpt-5.6-luna"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        96
+      ],
+      "id": "f1430211-1e6e-4250-90a7-99fd88363961",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "81vYL87LMHr7V3mG",
+          "name": "OpenAI account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Email Trigger": {
+      "main": [
+        [
+          {
+            "node": "PDF check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF check": {
+      "main": [
+        [
+          {
+            "node": "PDF extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF extraction": {
+      "main": [
+        [
+          {
+            "node": "Extract info from PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract info from PDF": {
+      "main": [
+        [
+          {
+            "node": "Check extracted values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check extracted values": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a slack notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicate": {
+      "main": [
+        [
+          {
+            "node": "is new",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update inventory table": {
+      "main": [
+        []
+      ]
+    },
+    "is new": {
+      "main": [
+        [
+          {
+            "node": "Update inventory table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract info from PDF",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "tfyTGp5aLoXHJZe6",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "200036b0-2384-44fd-b1d4-b8853069e972",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0410592de8a0f9ccd1d38ef64a0e9321d991215aab5ade83bff6ac0e7b2e897a"
+  },
+  "nodeGroups": [],
+  "id": "OcwM8QdZBH4OGgtJ",
+  "tags": []
+}
